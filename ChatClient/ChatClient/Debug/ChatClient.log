@@ -1,0 +1,3 @@
+﻿  ChatClient.cpp
+c:\users\yannick\documents\visual studio 2015\projects\chatclient\chatclient\chatclient.cpp(71): error C4996: 'inet_addr': Use inet_pton() or InetPton() instead or define _WINSOCK_DEPRECATED_NO_WARNINGS to disable deprecated API warnings
+  c:\program files (x86)\windows kits\8.1\include\um\winsock2.h(1850): note: see declaration of 'inet_addr'
