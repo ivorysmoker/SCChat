@@ -23,6 +23,7 @@ char sendbuf[256] = {0};
 char recvbuf[256] = "test";
 SOCKET sConnect;
 
+bool recvSwitcher = false;
 TCHAR textBuffer[256] = {0};
 //Hilfsvariable
 long rc;
@@ -37,7 +38,7 @@ void MyThread(HWND hWnd) {
 	long res;
 	MessageBox(NULL, _T("Thread Startet"), _T("Thread Startet"), MB_OK);
 	while (1) {
-		memset(&recvbuf, 0, sizeof(recvbuf));
+		//memset(&recvbuf, 0, sizeof(recvbuf));
 		res = recv(sConnect, recvbuf, 256, 0);
 		if (res == SOCKET_ERROR) {
 			MessageBox(NULL, _T("ERROR"), _T("error recv():"), MB_OK);
@@ -49,9 +50,9 @@ void MyThread(HWND hWnd) {
 			//wcstombs(recvbuf, textBuffer, sizeof(recvbuf)); // ithink that is fail textBuffer is NULL!!
 			//::GetSystemDirectoryA(recvbuf, _countof(recvbuf)); // notice the A
 			//strcat(recvbuf, "\\version.dll");
-			
+			recvSwitcher = true;
 			//sprintf(recvbuf, "%f", textBuffer);
-			MessageBoxA(NULL, recvbuf, recvbuf, MB_OK);
+			//MessageBoxA(NULL, recvbuf, recvbuf, MB_OK);
 			RedrawWindow(hWnd, 0, 0, RDW_INVALIDATE);
 			//cout << res << " bytes received: "
 			//<< recvbuf << endl;
@@ -324,14 +325,22 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 			//char text[] = "Test";
 			TextOut(hdc, 10, textHeight, buffer, sizeof(buffer));
 
-
+			//MessageBoxA(NULL, recvbuf, recvbuf, MB_OK);
 			//MessageBox(NULL, szName, szName, MB_OK);
 				//Convert CHAR TO TCHAR
 				//MessageBox(NULL, textBuffer, textBuffer, MB_OK);
 
 				//NULLL
 
-				TextOut(hdc, 50, textHeight, textBuffer, sizeof(textBuffer));
+			//Sobald eine Nachricht kommt aktiviere das!
+			if (recvSwitcher) {
+				recvSwitcher = false;
+				//MessageBoxA(NULL, recvbuf, recvbuf, MB_OK);
+				textHeight = textHeight + 20;
+				TextOutA(hdc, 10, textHeight, recvbuf, sizeof(recvbuf));
+			}
+			//TextOut(hdc, 50, textHeight, _T("Test"), strlen("Test"));
+
 			//TextOut(hdc, 10, 30, TEXT("lol"), strlen("lol"));
 			EndPaint(hWnd, &ps);
 
