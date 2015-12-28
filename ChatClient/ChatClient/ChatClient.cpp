@@ -20,9 +20,10 @@ INT_PTR CALLBACK    About(HWND, UINT, WPARAM, LPARAM);
 using namespace std;
 
 char sendbuf[256] = {0};
-char recvbuf[256] = {0};
+char recvbuf[256] = "test";
 SOCKET sConnect;
 
+TCHAR textBuffer[256] = {0};
 //Hilfsvariable
 long rc;
 
@@ -32,20 +33,30 @@ void TCharToChar(const wchar_t* Src, char* Dest, int Size)
 }
 
 
-void MyThread() {
+void MyThread(HWND hWnd) {
 	long res;
+	MessageBox(NULL, _T("Thread Startet"), _T("Thread Startet"), MB_OK);
 	while (1) {
 		memset(&recvbuf, 0, sizeof(recvbuf));
 		res = recv(sConnect, recvbuf, 256, 0);
 		if (res == SOCKET_ERROR) {
-			cout << "error recv(): " << WSAGetLastError() << endl;
-			cout << this_thread::get_id() << endl;
+			MessageBox(NULL, _T("ERROR"), _T("error recv():"), MB_OK);
+			//cout << "error recv(): " << WSAGetLastError() << endl;
+			//cout << this_thread::get_id() << endl;
 			break;
 		}
 		else {
+			//wcstombs(recvbuf, textBuffer, sizeof(recvbuf)); // ithink that is fail textBuffer is NULL!!
+			//::GetSystemDirectoryA(recvbuf, _countof(recvbuf)); // notice the A
+			//strcat(recvbuf, "\\version.dll");
+			
+			//sprintf(recvbuf, "%f", textBuffer);
+			MessageBoxA(NULL, recvbuf, recvbuf, MB_OK);
+			RedrawWindow(hWnd, 0, 0, RDW_INVALIDATE);
 			//cout << res << " bytes received: "
 			//<< recvbuf << endl;
-			cout << recvbuf << endl;
+			//RedrawWindow(hWnd, 0, 0, RDW_INVALIDATE);
+			//cout << recvbuf << endl;
 		}
 	}
 }
@@ -76,8 +87,6 @@ void Connection(HWND hWnd)
 	rc = connect(sConnect, (struct sockaddr*)&conpar, conparlen);
 	if (rc != SOCKET_ERROR) {
 		MessageBox(hWnd, TEXT("connect(): " + GetLastError()), NULL, MB_OK);
-		thread Thread1(MyThread);
-		Thread1.detach();
 	}
 	//cout << "connect()\t\t successful" << endl;
 	else
@@ -209,7 +218,13 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
     {
 	case WM_CREATE:
 	{
+		//Open Connection to Server
 		Connection(hWnd);
+
+		//Open Thread: Massages from Server recv
+		thread Thread1(MyThread, hWnd);
+		Thread1.detach();
+
 		textBoxMassage = CreateWindowEx(NULL, L"Message", NULL, WS_VISIBLE | WS_CHILD | WS_BORDER | ES_AUTOHSCROLL, CW_USEDEFAULT, CW_USEDEFAULT, 500, 400, hWnd, NULL, hInst, NULL);
 		if (textBoxMassage == NULL) {
 			MessageBox(hWnd, TEXT("ERROR: CreateWindowsEx()" + GetLastError()), NULL, MB_OK);
@@ -312,8 +327,6 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 
 			//MessageBox(NULL, szName, szName, MB_OK);
 				//Convert CHAR TO TCHAR
-				TCHAR textBuffer[256];
-				wcstombs(recvbuf, textBuffer, sizeof(textBuffer));
 				//MessageBox(NULL, textBuffer, textBuffer, MB_OK);
 
 				//NULLL
